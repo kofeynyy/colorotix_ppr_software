@@ -1,0 +1,58 @@
+services:
+  postgres1:
+    image: postgres:latest
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_data1:/var/lib/postgresql/client_data
+    environment:
+      POSTGRES_USER: ppr_client1
+      POSTGRES_PASSWORD: n#*2@TVkE?h4
+      POSTGRES_DB: client1_db
+  postgres2:
+    image: postgres:latest
+    ports:
+    - "5434:5432"
+    volumes:
+      - pg_data2:/var/lib/postgresql/client_data
+    environment:
+      POSTGRES_USER: ppr_client2
+      POSTGRES_PASSWORD: y8_p_SQYJB_5
+      POSTGRES_DB: client2_db
+  postgres3:
+    image: postgres:latest
+    ports:
+    - "5435:5432"
+    volumes:
+      - pg_data3:/var/lib/postgresql/client_data
+    environment:
+      POSTGRES_USER: ppr_client3
+      POSTGRES_PASSWORD: x92gBAms5DC-
+      POSTGRES_DB: client3_db
+  postgres4:
+    image: postgres:latest
+    ports:
+    - "5436:5432"
+    volumes:
+      - pg_data4:/var/lib/postgresql/client_data
+    environment:
+      POSTGRES_USER: ppr_client4
+      POSTGRES_PASSWORD: So17rRR-CHzi
+      POSTGRES_DB: client4_db
+  postgres5:
+    image: postgres:latest
+    ports:
+    - "5437:5432"
+    volumes:
+      - pg_data5:/var/lib/postgresql/client_data
+    environment:
+      POSTGRES_USER: ppr_client5
+      POSTGRES_PASSWORD: Fg-2-gmC7_iF
+      POSTGRES_DB: client5_db
+
+volumes:
+  pg_data1:
+  pg_data2:
+  pg_data3:
+  pg_data4:
+  pg_data5:

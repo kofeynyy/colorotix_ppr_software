@@ -1,0 +1,8 @@
+pandas
+openpyxl
+sqlalchemy
+psycopg2-binary
+apache-airflow==2.7.3
+apache-airflow-providers-postgres
+prophet==1.1.7
+pystan==2.19.1.1

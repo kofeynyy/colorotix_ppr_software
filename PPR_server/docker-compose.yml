@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: colorotix
+      POSTGRES_PASSWORD: C5t%KxNSrwcapSc
+      POSTGRES_DB: ppr_contest
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  airflow-init:
+    image: apache/airflow:2.7.3-python3.8
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://colorotix:C5t%KxNSrwcapSc@postgres/ppr_contest
+      AIRFLOW__CORE__FERNET_KEY: ''
+      AIRFLOW__WEBSERVER__SECRET_KEY: 'ee9c20205535e8acbf23811698a1f8b9bcba28956fce1a8ea5fdd76ed959dbca'
+      AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
+      TZ: Europe/Moscow
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./input:/opt/airflow/input
+      - ./requirements.txt:/requirements.txt
+    entrypoint: /bin/bash
+    command: >
+      -c "
+      pip install -r /requirements.txt &&
+      airflow db init &&
+      airflow users create --username admin --password secret123 --firstname Admin --lastname User --role Admin --email admin@example.com
+      "
+
+  airflow-webserver:
+    image: apache/airflow:2.7.3-python3.8
+    depends_on:
+      - airflow-init
+    restart: always
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://colorotix:C5t%KxNSrwcapSc@postgres/ppr_contest
+      AIRFLOW__WEBSERVER__SECRET_KEY: 'ee9c20205535e8acbf23811698a1f8b9bcba28956fce1a8ea5fdd76ed959dbca'
+      AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
+      TZ: Europe/Moscow
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./input:/opt/airflow/input
+      - ./requirements.txt:/requirements.txt
+    entrypoint: /bin/bash
+    command: -c "pip install -r /requirements.txt && airflow webserver"
+
+  airflow-scheduler:
+    image: apache/airflow:2.7.3-python3.8
+    depends_on:
+      - airflow-webserver
+    restart: always
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://colorotix:C5t%KxNSrwcapSc@postgres/ppr_contest
+      AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
+      AIRFLOW__WEBSERVER__SECRET_KEY: 'ee9c20205535e8acbf23811698a1f8b9bcba28956fce1a8ea5fdd76ed959dbca'
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
+      TZ: Europe/Moscow
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./input:/opt/airflow/input
+      - ./requirements.txt:/requirements.txt
+    entrypoint: /bin/bash
+    command: -c "pip install -r /requirements.txt && airflow scheduler"
+
+  superset:
+    image: apache/superset:latest
+    depends_on:
+      - postgres
+    environment:
+      SUPERSET_DATABASE_URI: postgresql+psycopg2://colorotix:C5t%KxNSrwcapSc@postgres/ppr_contest
+      TZ: Europe/Moscow
+      SUPERSET_SECRET_KEY: 'dMXOmIKemJgHJAc/Q+OmECDIIQldPU2V2ZzomJsbvm9wvLtpEkKiJKDI'
+    ports:
+      - "8088:8088"
+    volumes:
+      - superset_home:/app/superset_home
+    command: >
+      /bin/sh -c "
+      superset db upgrade &&
+      superset fab create-admin --username admin --firstname Admin --lastname User --email admin@example.com --password admin123 &&
+      superset init &&
+      superset run -h 0.0.0.0 -p 8088
+      "
+
+volumes:
+  postgres_data:
+  superset_home:
